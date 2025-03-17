@@ -9,6 +9,11 @@ from langchain_groq import ChatGroq
 from typing import List
 from langchain.output_parsers import PydanticOutputParser
 from pydantic import BaseModel, Field
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 class SWOTAnalysis(BaseModel):
     strengths: List[str] = Field(..., description="List of strengths")
@@ -73,7 +78,7 @@ def combine_prompt():
 
 def language_model():
     llm = ChatGroq(
-    api_key="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",
+    api_key= os.getenv("GROQ_API_KEY"),
     model_name="llama-3.2-90b-vision-preview",
     temperature=0.7
 )
@@ -91,9 +96,3 @@ def perform_swot_analysis(report):
     result_value = parser.parse(output)
 
     return result_value
-
-
-
-result = perform_swot_analysis("The Company’s new products often utilize custom components available from only one source. When a component or productuses new technologies, initial capacity constraints may exist until the suppliers’ yields have matured or their manufacturing capacities have increased. The continued availability of these components at acceptable prices, or at all, can be affected for anynumber of reasons, including if suppliers decide to concentrate on the production of common components instead of components customized to meet the Company’s requirements. When the Company’s supply of components for a new or existing product has been delayed or constrained, or when an outsourcing partner has delayed shipments of completed products to the Company, the Company’s business, results of operations and financial condition have been adversely affected and future delays or constraints could materially adversely affect the Company’s business, results of operations and financial condition. The Company’s business and financial performance could also be materially adversely affected depending on the time required to obtain sufficient quantities from the source, or to identify and obtain sufficient quantities from an alternative source.")
-
-print(result)
