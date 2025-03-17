@@ -95,4 +95,8 @@ def perform_swot_analysis(report):
 
     result_value = parser.parse(output)
 
+    result_value = result_value
+
     return result_value
+
+
