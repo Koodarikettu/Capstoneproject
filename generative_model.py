@@ -1,7 +1,4 @@
-from bs4 import BeautifulSoup
-import pandas as pd
-import json
-import bs4
+
 from langchain.chains.summarize import load_summarize_chain
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain import PromptTemplate
@@ -11,6 +8,7 @@ from langchain.output_parsers import PydanticOutputParser
 from pydantic import BaseModel, Field
 import os
 from dotenv import load_dotenv
+from pypdf import PdfReader
 
 load_dotenv()
 
@@ -23,6 +21,13 @@ class SWOTAnalysis(BaseModel):
 
 parser = PydanticOutputParser(pydantic_object=SWOTAnalysis)
 
+
+def pdf_to_text(file):
+    reader = PdfReader(file)
+    text = ""
+    for page in reader.pages:
+        text += page.extract_text()
+    return text
 
 def splitter(text):
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=5000, chunk_overlap=500)
@@ -85,16 +90,22 @@ def language_model():
     return llm
     
 def perform_swot_analysis(report):
+
+    try:
+        if report.type == "application/pdf":
+            report = pdf_to_text(report)
+    except:
+        pass
+    
     summary_chain = load_summarize_chain(llm=language_model(), chain_type='map_reduce',
                                         map_prompt=map_prompt(),
                                         combine_prompt=combine_prompt(),
                                         verbose=True)
 
 
-    output = summary_chain.run(splitter(report))
+    splitted_text = splitter(report)
+    output = summary_chain.run(splitted_text)
 
     result_value = parser.parse(output)
 
     return result_value
-
-
