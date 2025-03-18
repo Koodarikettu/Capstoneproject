@@ -19,7 +19,16 @@ class SWOTAnalysis(BaseModel):
     opportunities: List[str] = Field(..., description="List of opportunities")
     threats: List[str] = Field(..., description="List of threats")
 
-parser = PydanticOutputParser(pydantic_object=SWOTAnalysis)
+class PESTELAnalysis(BaseModel):
+    political: List[str] = Field(..., description="List of Political factors")
+    economic: List[str] = Field(..., description="List of Economic factors")
+    social: List[str] = Field(..., description="List of Social factors")
+    technological: List[str] = Field(..., description="List of Tehcnological factors")
+    environmental: List[str] = Field(..., description="List of Environmental factors")
+    legal: List[str] = Field(..., description="List of Legal factors")
+
+parserSWOT = PydanticOutputParser(pydantic_object=SWOTAnalysis)
+parserPESTEL = PydanticOutputParser(pydantic_object=PESTELAnalysis)
 
 
 def pdf_to_text(file):
@@ -34,51 +43,95 @@ def splitter(text):
     chunks = text_splitter.create_documents([text])
     return chunks
 
-def map_prompt():
-    map_prompt = """
-    ### Instruction:
-    Your job is to summarize the report that is given to you. Make comprehensive summary and do SWOT analysis.
+def map_prompt(summarization_type):
+    if summarization_type == "SWOT":
+        map_prompt = """
+        ### Instruction:
+        Your job is to summarize the report that is given to you. Make comprehensive summary and do SWOT analysis.
 
-    {format_instructions}
+        {format_instructions}
 
 
-    ### Report:
-    {text}
-    """
+        ### Report:
+        {text}
+        """
 
-    map_prompt_template = PromptTemplate(template=map_prompt, input_variables=["text"], partial_variables={"format_instructions": parser.get_format_instructions()})
+        map_prompt_template = PromptTemplate(template=map_prompt, input_variables=["text"], partial_variables={"format_instructions": parserSWOT.get_format_instructions()})
 
+    else:
+        map_prompt = """
+        ### Instruction:
+        Your job is to summarize the report that is given to you. Make comprehensive summary and do PESTEL analysis.
+
+        {format_instructions}
+
+
+        ### Report:
+        {text}
+        """
+
+        map_prompt_template = PromptTemplate(template=map_prompt, input_variables=["text"], partial_variables={"format_instructions": parserPESTEL.get_format_instructions()})        
 
     return map_prompt_template
 
-def combine_prompt():
-    combine_prompt = """
-    ### Instruction:
-    Summarize Report's key points under SWOT-analysis four distinct headings: Sternghts, Weakneses, Opportunities and Threats
+def combine_prompt(summarization_type):
+    if summarization_type == "SWOT":
+        combine_prompt = """
+        ### Instruction:
+        Summarize Report's key points under SWOT-analysis four distinct headings: Sternghts, Weakneses, Opportunities and Threats
 
-    {format_instructions}
+        {format_instructions}
 
-    ### Report:
-    {text}
+        ### Report:
+        {text}
 
-    ### strengths:
-    -
+        ### strengths:
+        -
 
-    ### weaknesses:
-    - 
+        ### weaknesses:
+        - 
 
-    ### opportunities:
-    - 
+        ### opportunities:
+        - 
 
-    ### threats:
-    - 
-    """
+        ### threats:
+        - 
+        """
 
-    combine_prompt_template = PromptTemplate(template=combine_prompt, input_variables=["text"], partial_variables={"format_instructions": parser.get_format_instructions()})
+        combine_prompt_template = PromptTemplate(template=combine_prompt, input_variables=["text"], partial_variables={"format_instructions": parserSWOT.get_format_instructions()})
 
+    else:
+        combine_prompt = """
+        ### Instruction:
+        Summarize Report's key points under PESTEL-analysis five distinct headings: Political, Economic, Social, Tehcnological, Environmental, and Legal.
+
+        {format_instructions}
+
+        ### Report:
+        {text}
+
+        ### Political:
+        -
+
+        ### Economic:
+        - 
+
+        ### Social:
+        - 
+
+        ### Tehcnological:
+        - 
+
+        ### Environmental:
+        -
+
+        ### Legal:
+        - 
+        """
+
+        combine_prompt_template = PromptTemplate(template=combine_prompt, input_variables=["text"], partial_variables={"format_instructions": parserPESTEL.get_format_instructions()})
 
     return combine_prompt_template
-
 
 
 def language_model():
@@ -88,24 +141,28 @@ def language_model():
     temperature=0.7
 )
     return llm
+
     
-def perform_swot_analysis(report):
+def perform_analysis(report, summarization_type):
 
     try:
         if report.type == "application/pdf":
             report = pdf_to_text(report)
     except:
         pass
-    
+
     summary_chain = load_summarize_chain(llm=language_model(), chain_type='map_reduce',
-                                        map_prompt=map_prompt(),
-                                        combine_prompt=combine_prompt(),
+                                        map_prompt=map_prompt(summarization_type),
+                                        combine_prompt=combine_prompt(summarization_type),
                                         verbose=True)
 
 
     splitted_text = splitter(report)
     output = summary_chain.run(splitted_text)
 
-    result_value = parser.parse(output)
+    if summarization_type == "SWOT":
+        result_value = parserSWOT.parse(output)
+    else:
+        result_value = parserPESTEL.parse(output)
 
     return result_value

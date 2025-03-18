@@ -1,5 +1,5 @@
 import streamlit as st
-from generative_model import perform_swot_analysis
+from generative_model import perform_analysis
 
 
 #käynnistyy konsolista komennolla, riippuen tiedoston nimestä  "streamlit run app.py"
@@ -43,35 +43,43 @@ def swot_analysis(data):
             st.write(f"- {item}")
     return
 
-
 def pestel_analysis(data):
-    st.title("SWOT-analysis")
+    st.title("PESTEL-analysis")
     col3, col4 = st.columns(2)
 
     with col3:
-        st.subheader("Strenghts (S)")
-        for item in data.strengths:
+        st.subheader("Political")
+        for item in data.political:
             st.write(f"- {item}")
 
-        st.subheader("Opportunities (O)")
-        for item in data.opportunities:
+        st.subheader("Economic")
+        for item in data.economic:
             st.write(f"- {item}")
 
+        st.subheader("Social")
+        for item in data.social:
+            st.write(f"- {item}")
     with col4:
-        st.subheader("Weaknesses (W)")
-        for item in data.weaknesses:
+        st.subheader("Technological")
+        for item in data.technological:
             st.write(f"- {item}")
-
-        st.subheader("Threats (T)")
-        for item in data.threats:
+        st.subheader("Environmental")
+        for item in data.environmental:
+            st.write(f"- {item}")
+        st.subheader("Legal")
+        for item in data.legal:
             st.write(f"- {item}")
     return
+
 
 
 if pdf_report or report:
     if pdf_report:
         report = pdf_report
     st.balloons()
-    analysis = perform_swot_analysis(report)
-    swot_analysis(analysis)
+    analysis = perform_analysis(report, summarization_type)
+    if summarization_type == "SWOT":
+        swot_analysis(analysis)
+    else:
+        pestel_analysis(analysis)
 
