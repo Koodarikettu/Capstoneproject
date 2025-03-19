@@ -48,6 +48,7 @@ def map_prompt(summarization_type):
         map_prompt = """
         ### Instruction:
         Your job is to summarize the report that is given to you. Make comprehensive summary and do SWOT analysis.
+        Do not include any explanatory text before or after the JSON.
 
         {format_instructions}
 
@@ -62,6 +63,7 @@ def map_prompt(summarization_type):
         map_prompt = """
         ### Instruction:
         Your job is to summarize the report that is given to you. Make comprehensive summary and do PESTEL analysis.
+        Do not include any explanatory text before or after the JSON.
 
         {format_instructions}
 
@@ -79,6 +81,7 @@ def combine_prompt(summarization_type):
         combine_prompt = """
         ### Instruction:
         Summarize Report's key points under SWOT-analysis four distinct headings: Sternghts, Weakneses, Opportunities and Threats
+        Do not include any explanatory text before or after the JSON.
 
         {format_instructions}
 
@@ -104,6 +107,7 @@ def combine_prompt(summarization_type):
         combine_prompt = """
         ### Instruction:
         Summarize Report's key points under PESTEL-analysis five distinct headings: Political, Economic, Social, Tehcnological, Environmental, and Legal.
+        Do not include any explanatory text before or after the JSON.
 
         {format_instructions}
 
