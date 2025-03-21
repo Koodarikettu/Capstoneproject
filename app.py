@@ -1,5 +1,8 @@
 import streamlit as st
 from generative_model import perform_analysis
+import requests
+
+BASE_URL = "http://127.0.0.1:8000"
 
 
 #käynnistyy konsolista komennolla, riippuen tiedoston nimestä  "streamlit run app.py"
@@ -26,20 +29,20 @@ def swot_analysis(data):
 
     with col3:
         st.subheader("Strenghts (S)")
-        for item in data.strengths:
+        for item in data["strengths"]:
             st.write(f"- {item}")
 
         st.subheader("Opportunities (O)")
-        for item in data.opportunities:
+        for item in data["opportunities"]:
             st.write(f"- {item}")
 
     with col4:
         st.subheader("Weaknesses (W)")
-        for item in data.weaknesses:
+        for item in data["weaknesses"]:
             st.write(f"- {item}")
 
         st.subheader("Threats (T)")
-        for item in data.threats:
+        for item in data["threats"]:
             st.write(f"- {item}")
     return
 
@@ -49,25 +52,25 @@ def pestel_analysis(data):
 
     with col3:
         st.subheader("Political")
-        for item in data.political:
+        for item in data["political"]:
             st.write(f"- {item}")
 
         st.subheader("Economic")
-        for item in data.economic:
+        for item in data["economic"]:
             st.write(f"- {item}")
 
         st.subheader("Social")
-        for item in data.social:
+        for item in data["social"]:
             st.write(f"- {item}")
     with col4:
         st.subheader("Technological")
-        for item in data.technological:
+        for item in data["technological"]:
             st.write(f"- {item}")
         st.subheader("Environmental")
-        for item in data.environmental:
+        for item in data["environmental"]:
             st.write(f"- {item}")
         st.subheader("Legal")
-        for item in data.legal:
+        for item in data["legal"]:
             st.write(f"- {item}")
     return
 
@@ -77,9 +80,10 @@ if pdf_report or report:
     if pdf_report:
         report = pdf_report
     st.balloons()
-    analysis = perform_analysis(report, summarization_type)
+    report_summarization = {"report": report, "summarization_type": summarization_type}
+    response = requests.post(f"{BASE_URL}/analyze/report", report_summarization)
+    response = response.json()
     if summarization_type == "SWOT":
-        swot_analysis(analysis)
+        swot_analysis(response)
     else:
-        pestel_analysis(analysis)
-
+        pestel_analysis(response)
