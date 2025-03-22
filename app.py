@@ -78,10 +78,13 @@ def pestel_analysis(data):
 
 if pdf_report or report:
     if pdf_report:
-        report = pdf_report
+        files = {'file': pdf_report}
+        data = {"summarization_type": summarization_type}
+        response = requests.post(f"{BASE_URL}/analyze/report/pdf", files=files, data=data)
+    else:
+        report_summarization = {"report": report, "summarization_type": summarization_type}
+        response = requests.post(f"{BASE_URL}/analyze/report/text", json=report_summarization)
     st.balloons()
-    report_summarization = {"report": report, "summarization_type": summarization_type}
-    response = requests.post(f"{BASE_URL}/analyze/report", json=report_summarization)
     response = response.json()
     if summarization_type == "SWOT":
         swot_analysis(response)
