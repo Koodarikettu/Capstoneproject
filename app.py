@@ -81,7 +81,7 @@ if pdf_report or report:
         report = pdf_report
     st.balloons()
     report_summarization = {"report": report, "summarization_type": summarization_type}
-    response = requests.post(f"{BASE_URL}/analyze/report", report_summarization)
+    response = requests.post(f"{BASE_URL}/analyze/report", json=report_summarization)
     response = response.json()
     if summarization_type == "SWOT":
         swot_analysis(response)
